@@ -55,7 +55,7 @@ class UDPDataCollector(object):
 
 def collect_open_sockets(collector, ip_to_interface_map,
                          docker_hinter=dockerutils.pid_to_name,
-                         cmdrunner=utils.CmdRunner):
+                         cmdrunner=utils.CmdRunner()):
     sockets = []
     records = ssutils.parse_ss_output(collector.get_ss_output())
     for record in records:

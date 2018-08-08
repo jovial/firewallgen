@@ -27,13 +27,13 @@ def _clean_container_name_docker_output(output):
     return re.sub("^/", "", output)
 
 
-def container_id_to_name(id_, cmdrunner=utils.CmdRunner):
+def container_id_to_name(id_, cmdrunner=utils.CmdRunner()):
     cmd = ('docker inspect - -format "{{.Name}}" "${container_id}"'
            ).format(container_id=id_)
     output = cmdrunner.check_output(cmd)
     return _clean_container_name_docker_output(output)
 
 
-def pid_to_name(pid, cmdrunner=utils.CmdRunner):
+def pid_to_name(pid, cmdrunner=utils.CmdRunner()):
     id_ = pid_to_container_id(pid)
     return container_id_to_name(id_, cmdrunner=cmdrunner)
