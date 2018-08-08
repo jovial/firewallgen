@@ -891,24 +891,5 @@ class FirewallGen(unittest.TestCase):
         sockets = self.get_open_sockets()
         print(firewallgen.gen_firewall(sockets))
 
-    def test_transform_net_allocation(self):
-        allocation = {
-            'devops_ips': {
-                'host1': '10.65.1.0'
-            },
-            'provision_ips': {
-                'host1': '10.60.0.1'
-            }
-
-        }
-        expected = {
-            '10.65.1.0': 'devops_interface',
-            '127.0.0.1': 'lo',
-            '10.60.0.1': 'provision_interface'
-        }
-        result = firewallgen.transform_network_allocation(allocation)
-        self.assertEqual(expected, result)
-
-
 if __name__ == '__main__':
     unittest.main()
