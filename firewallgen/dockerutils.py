@@ -30,7 +30,11 @@ def _clean_container_name_docker_output(output):
 def container_id_to_name(id_, cmdrunner=utils.CmdRunner()):
     cmd = ('docker inspect - -format "{{.Name}}" "${container_id}"'
            ).format(container_id=id_)
-    output = cmdrunner.check_output(cmd)
+    try:
+        output = cmdrunner.check_output(cmd)
+    except OSError:
+        # Could be the case if docker not installed
+        return None
     return _clean_container_name_docker_output(output)
 
 
