@@ -2,7 +2,6 @@ from . import ssutils
 from . import iputils
 from . import dockerutils
 from . import utils
-from firewallgen import utils
 from jinja2 import Template
 
 ANSIBLE_METADATA = {
@@ -39,7 +38,7 @@ class OpenSocket:
                                                    self.processes)
 
 
-class TCPDataCollector:
+class TCPDataCollector(object):
     def get_ss_output(self):
         return ssutils.get_tcp_listening()
 
@@ -47,36 +46,12 @@ class TCPDataCollector:
         return OpenSocket(ip, port, interface, "tcp", processes)
 
 
-class UDPDataCollector:
+class UDPDataCollector(object):
     def get_ss_output(self):
         return ssutils.get_udp_listening()
 
     def create_socket(self, ip, port, interface, processes):
         return OpenSocket(ip, port, interface, "udp", processes)
-
-
-class AnsibleVersionMixin:
-    def get_version_flag(self):
-        return ssutils.get_version_flag(self.module.params['ipversion'])
-
-
-class AnsibleUDPCollector(UDPDataCollector, AnsibleVersionMixin):
-    def __init__(self, module):
-        super().__init__()
-        self.module = module
-
-    def get_ss_output(self):
-        self.module.cmd(["ss", "-nlpu", self.get_version_flag()])
-
-
-class AnsibleTCPCollector(UDPDataCollector, AnsibleVersionMixin):
-    def __init__(self, module):
-        super().__init__()
-        self.module = module
-
-    def get_ss_output(self):
-        self.module.cmd(["ss", "-nlpt", self.get_version_flag()])
-
 
 def collect_open_sockets(collector, ip_to_interface_map,
                          docker_hinter=dockerutils.pid_to_name,
@@ -108,17 +83,4 @@ def gen_firewall(sockets):
     return tmpl.render(
         firewall_rules=sockets
     )
-
-
-def transform_network_allocation(allocation):
-    map = {}
-    for label, host_to_ips in allocation.items():
-        # strip off _ips suffix
-        interface = "{}_interface".format(label[0:-4])
-        for host, ip in host_to_ips.items():
-            map[ip] = interface
-
-    map['127.0.0.1'] = 'lo'
-    return map
-
 
