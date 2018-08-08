@@ -1,0 +1,4 @@
+firewall_ipv4_input_allow_rules:
+    {% for rule in firewall_rules -%}
+    - { "interface": "{{ rule.interface }}", "port": "{{rule.port}}", "proto": "{{rule.proto}}"{% if rule.ip %}, "destination": {{ rule.ip }}{% endif %}, "comment": "hint used by: {{ rule.processes }}" }
+    {% endfor %}
