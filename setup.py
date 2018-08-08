@@ -7,4 +7,5 @@ setup(
    author='Will Szumski',
    author_email='will@stackhpc.com',
    packages=['firewallgen'],  #same as name
+   include_package_data=True
 )
