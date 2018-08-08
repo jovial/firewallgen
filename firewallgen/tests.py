@@ -1,9 +1,13 @@
 import unittest
 
-from firewallgen import dockerutils, ssutils, utils, iputils, firewallgen
-
 import logging
-from firewallgen.ssutils import (Punctuation, Identifier, Number, String)
+
+from . import iputils
+from . import ssutils
+from . import utils
+from . import firewallgen
+from . import dockerutils
+from .ssutils import (Punctuation, Identifier, Number, String)
 
 logger = logging.getLogger('firewallgen')
 

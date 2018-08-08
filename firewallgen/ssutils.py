@@ -1,7 +1,7 @@
 import re
 import collections
 import logging
-from firewallgen.logutils import debugcall
+from .logutils import debugcall
 
 FIELDS = ["State", "Recv-Q", "Send-Q", "Local Address:Port",
           "Peer Address: Port", "Extras"]
@@ -105,7 +105,7 @@ def tokenize_extras(stream):
     return tokens
 
 
-class AstNode:
+class AstNode(object):
     def accept(self, visitor):
         name = type(self).__name__.lower()
         method = getattr(visitor, "visit_{}".format(name))

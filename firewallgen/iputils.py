@@ -1,5 +1,9 @@
 import fileinput
-import ipaddress
+try:
+    # python three only
+    import ipaddress
+except ImportError:
+    pass
 import json
 
 

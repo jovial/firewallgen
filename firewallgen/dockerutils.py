@@ -1,4 +1,4 @@
-from firewallgen import utils
+from . import utils
 
 import re
 

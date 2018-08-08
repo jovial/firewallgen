@@ -1,6 +1,7 @@
-from firewallgen import ssutils
-from firewallgen import iputils
-from firewallgen import dockerutils
+from . import ssutils
+from . import iputils
+from . import dockerutils
+from . import utils
 from firewallgen import utils
 from jinja2 import Template
 
@@ -10,6 +11,9 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
+import os
+
+TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 
 class Process:
     def __init__(self, name, docker_hint=None):
@@ -99,7 +103,7 @@ def collect_open_sockets(collector, ip_to_interface_map,
 
 
 def gen_firewall(sockets):
-    with open('templates/firewall.j2') as f:
+    with open('{}/firewall.j2'.format(TEMPLATE_DIR)) as f:
         tmpl = Template(f.read())
     return tmpl.render(
         firewall_rules=sockets
