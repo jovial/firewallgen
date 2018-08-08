@@ -337,6 +337,8 @@ def parse_extras(extras):
 
 def parse_ss_output(output):
     # Ignore header for now
+    if isinstance(output, str):
+        output = iter(output.splitlines())
     _ = next(output)
     items = []
     for line in output:

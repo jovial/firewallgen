@@ -827,7 +827,7 @@ class SSUtilsTest(unittest.TestCase):
               Punctuation(data=')'), Punctuation(data=')')]
 
     def test_parse_ss_output(self):
-        print(ssutils.parse_ss_output(iter(SS_OUTPUT.splitlines())))
+        print(ssutils.parse_ss_output(SS_OUTPUT))
 
     def test_tokenize(self):
         res = [Identifier(data='users'), Punctuation(data=':'),
