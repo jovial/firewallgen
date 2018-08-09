@@ -1,4 +1,5 @@
 import fileinput
+import re
 try:
     # python three only
     import ipaddress
@@ -21,16 +22,15 @@ def _call_if_has(events, method, *arg, **kwargs):
 
 
 def get_ip_to_interface_map(cmdrunner):
-    raw = cmdrunner.check_output(["ip", "-o", "addr", "|", "awk",
-                                  "'{ print $2 \"\t\" $4 }'"])
+    raw = cmdrunner.check_output(["ip", "-o", "addr"])
     if isinstance(raw, str):
         raw = iter(raw.splitlines())
 
     ip_map = {}
     for line in raw:
-        split = line.split("\t")
-        interface = split[0]
-        ip_and_subnet = split[1]
+        fields = re.split('\s+', line)
+        interface = fields[1]
+        ip_and_subnet = fields[3]
         ip = ip_and_subnet.split("/")[0]
         ip_map[ip] = interface
     return ip_map

@@ -138,33 +138,33 @@ SS_OUTPUT_INTERFACE_IN_ADDR ="""State      Recv-Q Send-Q Local Address:Port     
 UNCONN     0      7680   *%breno1.71:67                       *:*                   users:(("dnsmasq",pid=4987,fd=4))
 """
 
-LSHW_OUT = """lo	127.0.0.1/8
-lo	::1/128
-eno1	fe80::1a03:73ff:feff:77f7/64
-breno1	10.61.102.0/16
-breno1	fe80::1a03:73ff:feff:77f7/64
-p-breno1-ovs	fe80::9456:76ff:fe11:1b6/64
-p-breth0-ovs	fe80::9411:8bff:fe10:8217/64
-breth0	fe80::5476:7ff:fe96:d045/64
-breno1.60	10.60.0.2/16
-breno1.60	10.60.0.1/32
-breno1.60	fe80::1a03:73ff:feff:77f7/64
-breno1.64	10.64.1.0/16
-breno1.64	fe80::1a03:73ff:feff:77f7/64
-breno1.65	10.65.1.0/16
-breno1.65	10.65.0.1/32
-breno1.65	fe80::1a03:73ff:feff:77f7/64
-breno1.66	10.66.1.0/16
-breno1.66	fe80::1a03:73ff:feff:77f7/64
-breno1.68	10.68.5.0/16
-breno1.68	fe80::1a03:73ff:feff:77f7/64
-breno1.69	10.69.0.2/16
-breno1.69	fe80::1a03:73ff:feff:77f7/64
-breno1.70	10.70.0.2/16
-breno1.70	fe80::1a03:73ff:feff:77f7/64
-breno1.71	10.71.0.2/16
-breno1.71	fe80::1a03:73ff:feff:77f7/64
-docker0	172.17.0.1/16
+LSHW_OUT = """1: lo    inet 127.0.0.1/8 scope host lo\       valid_lft forever preferred_lft forever
+1: lo    inet6 ::1/128 scope host \       valid_lft forever preferred_lft forever
+2: eno1    inet6 fe80::1a03:73ff:feff:77f7/64 scope link \       valid_lft forever preferred_lft forever
+5: breno1    inet 10.61.102.0/16 brd 10.61.255.255 scope global breno1\       valid_lft forever preferred_lft forever
+5: breno1    inet6 fe80::1a03:73ff:feff:77f7/64 scope link \       valid_lft forever preferred_lft forever
+7: p-breno1-ovs    inet6 fe80::9456:76ff:fe11:1b6/64 scope link \       valid_lft forever preferred_lft forever
+9: p-breth0-ovs    inet6 fe80::9411:8bff:fe10:8217/64 scope link \       valid_lft forever preferred_lft forever
+10: breth0    inet6 fe80::5476:7ff:fe96:d045/64 scope link \       valid_lft forever preferred_lft forever
+11: breno1.60    inet 10.60.0.2/16 brd 10.60.255.255 scope global breno1.60\       valid_lft forever preferred_lft forever
+11: breno1.60    inet 10.60.0.1/32 scope global breno1.60\       valid_lft forever preferred_lft forever
+11: breno1.60    inet6 fe80::1a03:73ff:feff:77f7/64 scope link \       valid_lft forever preferred_lft forever
+12: breno1.64    inet 10.64.1.0/16 brd 10.64.255.255 scope global breno1.64\       valid_lft forever preferred_lft forever
+12: breno1.64    inet6 fe80::1a03:73ff:feff:77f7/64 scope link \       valid_lft forever preferred_lft forever
+13: breno1.65    inet 10.65.1.0/16 brd 10.65.255.255 scope global breno1.65\       valid_lft forever preferred_lft forever
+13: breno1.65    inet 10.65.0.1/32 scope global breno1.65\       valid_lft forever preferred_lft forever
+13: breno1.65    inet6 fe80::1a03:73ff:feff:77f7/64 scope link \       valid_lft forever preferred_lft forever
+14: breno1.66    inet 10.66.1.0/16 brd 10.66.255.255 scope global breno1.66\       valid_lft forever preferred_lft forever
+14: breno1.66    inet6 fe80::1a03:73ff:feff:77f7/64 scope link \       valid_lft forever preferred_lft forever
+15: breno1.68    inet 10.68.5.0/16 brd 10.68.255.255 scope global breno1.68\       valid_lft forever preferred_lft forever
+15: breno1.68    inet6 fe80::1a03:73ff:feff:77f7/64 scope link \       valid_lft forever preferred_lft forever
+16: breno1.69    inet 10.69.0.2/16 brd 10.69.255.255 scope global breno1.69\       valid_lft forever preferred_lft forever
+16: breno1.69    inet6 fe80::1a03:73ff:feff:77f7/64 scope link \       valid_lft forever preferred_lft forever
+17: breno1.70    inet 10.70.0.2/16 brd 10.70.255.255 scope global breno1.70\       valid_lft forever preferred_lft forever
+17: breno1.70    inet6 fe80::1a03:73ff:feff:77f7/64 scope link \       valid_lft forever preferred_lft forever
+18: breno1.71    inet 10.71.0.2/16 brd 10.71.255.255 scope global breno1.71\       valid_lft forever preferred_lft forever
+18: breno1.71    inet6 fe80::1a03:73ff:feff:77f7/64 scope link \       valid_lft forever preferred_lft forever
+19: docker0    inet 172.17.0.1/16 scope global docker0\       valid_lft forever preferred_lft forever
 """
 
 
