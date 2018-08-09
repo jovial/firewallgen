@@ -21,24 +21,18 @@ def _call_if_has(events, method, *arg, **kwargs):
 
 
 def get_ip_to_interface_map(cmdrunner):
-    raw = cmdrunner.check_output(['lshw', '-json', '-quiet'])
-    hw = json.loads(raw)
+    raw = cmdrunner.check_output(["ip", "-o", "addr", "|", "awk",
+                                  "'{ print $2 \"\t\" $4 }'"])
+    if isinstance(raw, str):
+        raw = iter(raw.splitlines())
+
     ip_map = {}
-
-    def walk_children(node):
-        if not isinstance(node, dict):
-            return
-        for child in node['children']:
-            if 'children' in child:
-                walk_children(child)
-            if child['class'] != 'network':
-                continue
-            config = child['configuration']
-            if 'ip' in config:
-                ip = config['ip']
-                ip_map[ip] = child['logicalname']
-
-    walk_children(hw)
+    for line in raw:
+        split = line.split("\t")
+        interface = split[0]
+        ip_and_subnet = split[1]
+        ip = ip_and_subnet.split("/")[0]
+        ip_map[ip] = interface
     return ip_map
 
 
