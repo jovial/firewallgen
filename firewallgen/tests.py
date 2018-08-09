@@ -811,7 +811,7 @@ class DockerUtilsTest(unittest.TestCase):
         self.assertEqual(id_, None)
 
     def test_clean_container_name_docker_output(self):
-        input_ = "/prometheus_cadvisor"
+        input_ = "'/prometheus_cadvisor'"
         output = dockerutils._clean_container_name_docker_output(
             input_)
         self.assertEqual("prometheus_cadvisor", output)

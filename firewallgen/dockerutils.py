@@ -24,7 +24,9 @@ def _cgroup_lines_to_container_id(cgroup_lines):
 
 
 def _clean_container_name_docker_output(output):
-    return re.sub("^/", "", output)
+    m = re.search("'/(?P<container>.*)'", output)
+    if m:
+        return m.group("container")
 
 
 def container_id_to_name(id_, cmdrunner=utils.CmdRunner()):
