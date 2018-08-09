@@ -891,5 +891,14 @@ class FirewallGen(unittest.TestCase):
         sockets = self.get_open_sockets()
         print(firewallgen.gen_firewall(sockets))
 
+    def test_set_works_for_processes(self):
+        set_ = set()
+        a = firewallgen.Process("hello", "test")
+        b = firewallgen.Process("hello", "test")
+        set_.add(a)
+        set_.add(b)
+        self.assertEqual(a,b)
+        self.assertEqual(len(set_), 1)
+
 if __name__ == '__main__':
     unittest.main()

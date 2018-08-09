@@ -14,7 +14,8 @@ import os
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 
-class Process:
+
+class Process(object):
     def __init__(self, name, docker_hint=None):
         self.docker_hint = docker_hint
         self.name = name
@@ -23,8 +24,18 @@ class Process:
         return "Process(name:{}, docker_container:{})".format(self.name,
                                                               self.docker_hint)
 
+    def __eq__(self, other):
+        return self.name == other.name and \
+               self.docker_hint == other.docker_hint
 
-class OpenSocket:
+    def __hash__(self):
+        hash_ = hash(self.name)
+        if self.docker_hint:
+            hash_ += hash(self.docker_hint)
+        return hash_
+
+
+class OpenSocket(object):
     def __init__(self, ip, port, interface, proto, processes):
         self.processes = processes
         self.proto = proto
