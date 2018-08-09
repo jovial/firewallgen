@@ -133,6 +133,10 @@ LISTEN      0      128                                                10.60.0.1:
 LISTEN      0      128                                                10.65.0.1:5050                                                                   *:*                   users:(("haproxy",pid=3306,fd=35))
 """
 
+SS_OUTPUT_INTERFACE_IN_ADDR ="""State      Recv-Q Send-Q Local Address:Port               Peer Address:Port              
+UNCONN     0      7680   *%breno1.71:67                       *:*                   users:(("dnsmasq",pid=4987,fd=4))
+"""
+
 LSHW_OUT = """                                                                
 {
   "id" : "juno",
@@ -872,24 +876,40 @@ class FakeCollector(firewallgen.TCPDataCollector):
         return iter(SS_OUTPUT.splitlines())
 
 
+class FakeCollectorInterfaceInAddr(firewallgen.TCPDataCollector):
+    def get_ss_output(self):
+        return SS_OUTPUT_INTERFACE_IN_ADDR
+
+
 class FirewallGen(unittest.TestCase):
     def test_opensockets(self):
         result = self.get_open_sockets()
 
-    def get_open_sockets(self):
+    def get_open_sockets(self, collector=FakeCollector()):
         map = {
             '10.65.1.0': 'eth1',
             '10.65.0.1': 'eth2',
             '10.60.0.1': 'eth3',
             '127.0.0.1': 'lo'
         }
-        result = firewallgen.collect_open_sockets(FakeCollector(), map,
+        result = firewallgen.collect_open_sockets(collector, map,
                                                   docker_hinter=fake_pid_to_docker)
+
         return result
 
     def test_gen_conf(self):
         sockets = self.get_open_sockets()
         print(firewallgen.gen_firewall(sockets))
+
+    def test_gen_sockets(self):
+        sockets = self.get_open_sockets(
+            collector=FakeCollectorInterfaceInAddr()
+        )
+        self.assertEqual(len(sockets), 1)
+        socket = sockets[0]
+        self.assertEqual(socket.ip, None)
+        self.assertEqual(socket.interface, "breno1.71")
+        print(sockets)
 
     def test_set_works_for_processes(self):
         set_ = set()

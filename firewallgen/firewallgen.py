@@ -81,6 +81,9 @@ def collect_open_sockets(collector, ip_to_interface_map,
         if addr == '*':
             interface = "all"
             addr = None
+        elif addr.startswith('*%'):
+            interface = addr.lstrip('*%')
+            addr = None
         else:
             interface = ip_to_interface_map.get(addr, None)
         socket = collector.create_socket(addr, port, interface, processes)
