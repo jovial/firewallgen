@@ -8,6 +8,7 @@ from . import utils
 from . import firewallgen
 from . import dockerutils
 from .ssutils import (Punctuation, Identifier, Number, String)
+import mock
 
 logger = logging.getLogger('firewallgen')
 
@@ -901,6 +902,16 @@ class FirewallGen(unittest.TestCase):
         sockets = self.get_open_sockets()
         print(firewallgen.gen_firewall(sockets))
 
+    @mock.patch.object(iputils, 'get_ip_to_interface_map', autospec=True)
+    def test_interface_lookup(self, mock_map, collector=FakeCollector()):
+        mock_map.mock.side_effect = lambda x: {
+            '10.65.1.0': 'eth1',
+            '10.65.0.1': 'eth2',
+            '10.60.0.1': 'eth3',
+            '127.0.0.1': 'lo'
+        }
+        firewallgen.collect_open_sockets(collector, {},
+                                         docker_hinter=fake_pid_to_docker)
     def test_gen_sockets(self):
         sockets = self.get_open_sockets(
             collector=FakeCollectorInterfaceInAddr()

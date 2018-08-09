@@ -69,6 +69,7 @@ def collect_open_sockets(collector, ip_to_interface_map,
                          cmdrunner=utils.CmdRunner()):
     sockets = []
     records = ssutils.parse_ss_output(collector.get_ss_output())
+    interface_map = None
     for record in records:
         listen_tuple = record['Local Address:Port']
         addr, port = iputils.do_parse_port(listen_tuple)
@@ -86,6 +87,10 @@ def collect_open_sockets(collector, ip_to_interface_map,
             addr = None
         else:
             interface = ip_to_interface_map.get(addr, None)
+            if not interface:
+                if not interface_map:
+                    interface_map = iputils.get_ip_to_interface_map(cmdrunner)
+                interface = interface_map[addr]
         socket = collector.create_socket(addr, port, interface, processes)
         sockets.append(socket)
     return sockets

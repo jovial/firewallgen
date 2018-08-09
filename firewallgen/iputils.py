@@ -21,9 +21,9 @@ def _call_if_has(events, method, *arg, **kwargs):
 
 
 def get_ip_to_interface_map(cmdrunner):
-    raw = cmdrunner.check_output('lshw -json -quiet')
+    raw = cmdrunner.check_output(['lshw', '-json', '-quiet'])
     hw = json.loads(raw)
-    map = {}
+    ip_map = {}
 
     def walk_children(node):
         if not isinstance(node, dict):
@@ -36,10 +36,10 @@ def get_ip_to_interface_map(cmdrunner):
             config = child['configuration']
             if 'ip' in config:
                 ip = config['ip']
-                map[ip] = child['logicalname']
+                ip_map[ip] = child['logicalname']
 
     walk_children(hw)
-    return map
+    return ip_map
 
 
 def parse_port(line, events):
