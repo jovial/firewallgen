@@ -28,7 +28,7 @@ def _clean_container_name_docker_output(output):
 
 
 def container_id_to_name(id_, cmdrunner=utils.CmdRunner()):
-    cmd = ('docker inspect - -format "{{.Name}}" "${container_id}"'
+    cmd = ('docker inspect --format "{{.Name}}" "${container_id}"'
            ).format(container_id=id_)
     try:
         output = cmdrunner.check_output(cmd)
