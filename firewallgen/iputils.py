@@ -1,11 +1,13 @@
 import fileinput
 import re
+
+from .utils import call_if_has
+
 try:
     # python three only
     import ipaddress
 except ImportError:
     pass
-import json
 
 
 def do_parse_port(line):
@@ -13,12 +15,6 @@ def do_parse_port(line):
     addr = ":".join(split[0:-1])
     port = int(split[-1])
     return addr, port
-
-
-def _call_if_has(events, method, *arg, **kwargs):
-    if hasattr(events, method):
-        meth = events.__getattribute__(method)
-        meth(*arg, **kwargs)
 
 
 def get_ip_to_interface_map(cmdrunner):
@@ -41,12 +37,12 @@ def parse_port(line, events):
     try:
         addr = ipaddress.ip_address(addr_raw)
         if isinstance(addr, ipaddress.IPv4Address):
-            _call_if_has(events, "on_ipv4", addr, port)
+            call_if_has(events, "on_ipv4", addr, port)
         else:
-            _call_if_has(events, "on_ipv6", addr, port)
+            call_if_has(events, "on_ipv6", addr, port)
     except ValueError:
         if addr_raw == "*":
-            _call_if_has(events, "on_wildcard_ipv4", addr_raw, port)
+            call_if_has(events, "on_wildcard_ipv4", addr_raw, port)
 
 
 def _to_json(addr, port):
