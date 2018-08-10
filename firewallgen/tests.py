@@ -317,7 +317,7 @@ class FirewallGen(unittest.TestCase):
         self.assertEqual(len(sockets), 1)
         socket = sockets[0]
         self.assertEqual(socket.ip, None)
-        self.assertEqual(socket.interface, "breno1.71")
+        self.assertEqual(socket.interface, "all")
         print(sockets)
 
     def test_set_works_for_processes(self):
