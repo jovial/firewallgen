@@ -138,7 +138,7 @@ SS_OUTPUT_INTERFACE_IN_ADDR ="""State      Recv-Q Send-Q Local Address:Port     
 UNCONN     0      7680   *%breno1.71:67                       *:*                   users:(("dnsmasq",pid=4987,fd=4))
 """
 
-LSHW_OUT = """1: lo    inet 127.0.0.1/8 scope host lo\       valid_lft forever preferred_lft forever
+IP_ADDR_OUT = """1: lo    inet 127.0.0.1/8 scope host lo\       valid_lft forever preferred_lft forever
 1: lo    inet6 ::1/128 scope host \       valid_lft forever preferred_lft forever
 2: eno1    inet6 fe80::1a03:73ff:feff:77f7/64 scope link \       valid_lft forever preferred_lft forever
 5: breno1    inet 10.61.102.0/16 brd 10.61.255.255 scope global breno1\       valid_lft forever preferred_lft forever
@@ -170,7 +170,7 @@ LSHW_OUT = """1: lo    inet 127.0.0.1/8 scope host lo\       valid_lft forever p
 
 class FakeLSHWRunner(utils.CmdRunner):
     def check_output(self, *_, **__):
-        return LSHW_OUT
+        return IP_ADDR_OUT
 
 
 class IPUtilsTest(unittest.TestCase):
