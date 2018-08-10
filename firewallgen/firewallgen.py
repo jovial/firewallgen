@@ -2,18 +2,12 @@ from . import ssutils
 from . import iputils
 from . import dockerutils
 from . import utils
-from jinja2 import Template
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.0',
     'status': ['preview'],
     'supported_by': 'community'
 }
-
-import os
-
-TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
-
 
 class Process(object):
     def __init__(self, name, docker_hint=None):
@@ -98,12 +92,4 @@ def collect_open_sockets(collector, ip_to_interface_map,
         socket = collector.create_socket(addr, port, interface, processes)
         sockets.append(socket)
     return sockets
-
-
-def gen_firewall(sockets):
-    with open('{}/firewall.j2'.format(TEMPLATE_DIR)) as f:
-        tmpl = Template(f.read())
-    return tmpl.render(
-        firewall_rules=sockets
-    )
 

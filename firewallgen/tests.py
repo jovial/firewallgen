@@ -296,10 +296,6 @@ class FirewallGen(unittest.TestCase):
 
         return result
 
-    def test_gen_conf(self):
-        sockets = self.get_open_sockets()
-        print(firewallgen.gen_firewall(sockets))
-
     @mock.patch.object(iputils, 'get_ip_to_interface_map', autospec=True)
     def test_interface_lookup(self, mock_map, collector=FakeCollector()):
         mock_map.mock.side_effect = lambda x: {
