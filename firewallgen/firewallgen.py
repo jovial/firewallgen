@@ -88,7 +88,12 @@ def collect_open_sockets(collector, ip_to_interface_map,
             if not interface:
                 if not interface_map:
                     interface_map = iputils.get_ip_to_interface_map(cmdrunner)
-                interface = interface_map[addr]
+                if addr in interface_map:
+                    # sometimes a process can report to be listening on an ip
+                    # without a corresponding interface
+                    interface = interface_map[addr]
+        if not interface:
+            interface = "unknown"
         socket = collector.create_socket(addr, port, interface, processes)
         sockets.append(socket)
     return sockets
