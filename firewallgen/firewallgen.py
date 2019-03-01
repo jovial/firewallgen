@@ -3,11 +3,6 @@ from . import iputils
 from . import dockerutils
 from . import utils
 
-ANSIBLE_METADATA = {
-    'metadata_version': '1.0',
-    'status': ['preview'],
-    'supported_by': 'community'
-}
 
 class Process(object):
     def __init__(self, name, docker_hint=None):
@@ -57,6 +52,7 @@ class UDPDataCollector(object):
 
     def create_socket(self, ip, port, interface, processes):
         return OpenSocket(ip, port, interface, "udp", processes)
+
 
 def collect_open_sockets(collector, ip_to_interface_map,
                          docker_hinter=dockerutils.pid_to_name,
