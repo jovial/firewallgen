@@ -1,5 +1,5 @@
 import unittest
-
+import os
 import logging
 
 from . import iputils
@@ -12,6 +12,8 @@ import mock
 
 logger = logging.getLogger('firewallgen')
 
+PATH = os.path.realpath(os.path.dirname(__file__))
+
 FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(funcName)s - %(message)s'
 
 # Change logging LEVEL according to debugging needs.
@@ -20,6 +22,8 @@ FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(funcName)s - %(message)s'
 LEVEL = logging.WARNING
 
 logging.basicConfig(format=FORMAT, level=LEVEL)
+
+
 
 CGROUP_LINES_GOOD = """11:pids:/docker/cc0d36ee5866b01475012e2d2aff051ac169c12963af476dd8a3122b3ad1740b
 10:cpuset:/docker/cc0d36ee5866b01475012e2d2aff051ac169c12963af476dd8a3122b3ad1740b
@@ -232,6 +236,11 @@ class SSUtilsTest(unittest.TestCase):
     def test_parse_ss_output(self):
         print(ssutils.parse_ss_output(SS_OUTPUT))
 
+    def test_parse_ss_output(self):
+        with open(os.path.join(PATH, "testcases", "ss-no-extras.txt")) as f:
+            output = f.read()
+        print(ssutils.parse_ss_output(output))
+
     def test_tokenize(self):
         res = [Identifier(data='users'), Punctuation(data=':'),
                Punctuation(data='('), Punctuation(data='('),
@@ -280,9 +289,24 @@ class FakeCollectorInterfaceInAddr(firewallgen.TCPDataCollector):
         return SS_OUTPUT_INTERFACE_IN_ADDR
 
 
+class FakeCollectorSSNoExtras(firewallgen.UDPDataCollector):
+    def get_ss_output(self):
+        with open(os.path.join(PATH, "testcases", "ss-no-extras.txt")) as f:
+            output = f.read()
+        return output
+
+
 class FirewallGen(unittest.TestCase):
     def test_opensockets(self):
         result = self.get_open_sockets()
+
+    @mock.patch.object(iputils, 'get_ip_to_interface_map', autospec=True)
+    def test_ss_no_extras(self, mock_map):
+        mock_map.mock.side_effect = lambda x: {
+            '10.205.0.1': 'eth1',
+            '10.205.1.3': 'eth2',
+        }
+        print(self.get_open_sockets(collector=FakeCollectorSSNoExtras()))
 
     def get_open_sockets(self, collector=FakeCollector()):
         map = {

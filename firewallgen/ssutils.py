@@ -344,12 +344,13 @@ def parse_ss_output(output):
     for line in output:
         item = {}
         columns = _parse_line(line)
-        for i, field in enumerate(FIELDS):
+        for i, value in enumerate(columns):
+            field = FIELDS[i]
             if field == "Extras":
-                extras = columns[i]
-                logger.info("extras: {}".format(extras))
-                item[field] = parse_extras(extras)
+                if value:
+                    logger.info("extras: {}".format(value))
+                    item[field] = parse_extras(value)
             else:
-                item[field] = columns[i]
+                item[field] = value
         items.append(item)
     return items

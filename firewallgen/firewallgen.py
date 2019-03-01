@@ -68,10 +68,16 @@ def collect_open_sockets(collector, ip_to_interface_map,
         listen_tuple = record['Local Address:Port']
         addr, port = iputils.do_parse_port(listen_tuple)
         processes = set()
-        processes_raw = record['Extras']['users']
+        try:
+            processes_raw = record['Extras']['users']
+        except KeyError:
+            processes_raw = []
         for process in processes_raw:
             docker_hint = docker_hinter(process['pid'], cmdrunner=cmdrunner)
             process = Process(process['name'], docker_hint)
+            processes.add(process)
+        if not processes:
+            process = Process("unknown", None)
             processes.add(process)
         if addr == '*':
             interface = "all"
