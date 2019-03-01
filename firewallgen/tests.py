@@ -7,6 +7,7 @@ from . import ssutils
 from . import utils
 from . import firewallgen
 from . import dockerutils
+from . import haproxy
 from .ssutils import (Punctuation, Identifier, Number, String)
 import mock
 
@@ -348,6 +349,16 @@ class FirewallGen(unittest.TestCase):
         set_.add(b)
         self.assertEqual(a,b)
         self.assertEqual(len(set_), 1)
+
+
+class Haproxy(unittest.TestCase):
+    def test_basic(self):
+        hinter = haproxy.get_hinter(os.path.join(PATH, "testcases", "haproxy.cfg"))
+        self.assertEquals(hinter("10.215.0.1", 9093), "prometheus_alertmanager_external")
+
+    def test_basic2(self):
+        hinter = haproxy.get_hinter(os.path.join(PATH, "testcases", "haproxy.cfg"))
+        self.assertEquals(hinter("10.205.0.1", 9200), "elasticsearch")
 
 if __name__ == '__main__':
     unittest.main()
