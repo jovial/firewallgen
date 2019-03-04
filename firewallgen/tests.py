@@ -207,6 +207,20 @@ class DockerUtilsTest(unittest.TestCase):
             input)
         self.assertEqual(id_, None)
 
+    def test_multiple_slashes(self):
+        # this was observed on cumulus
+        line = "1:name=systemd:/docker/fa6b1bd0a55bf3291541fafea115070faf8c6b4e43457c5b0fa1132094311022/docker/fa6b1bd0a55bf3291541fafea115070faf8c6b4e43457c5b0fa1132094311022"
+        id_ = dockerutils._process_cgroup_line(
+            line)
+        self.assertEqual(id_, "fa6b1bd0a55bf3291541fafea115070faf8c6b4e43457c5b0fa1132094311022")
+
+    def test_multiple_slashes_with_newline(self):
+        # this was observed on cumulus
+        line = "1:name=systemd:/docker/fa6b1bd0a55bf3291541fafea115070faf8c6b4e43457c5b0fa1132094311022/docker/fa6b1bd0a55bf3291541fafea115070faf8c6b4e43457c5b0fa1132094311022\n"
+        id_ = dockerutils._process_cgroup_line(
+            line)
+        self.assertEqual(id_, "fa6b1bd0a55bf3291541fafea115070faf8c6b4e43457c5b0fa1132094311022")
+
     def test_cgroup_lines(self):
         id_ = dockerutils._cgroup_lines_to_container_id(
             CGROUP_LINES_GOOD.splitlines())

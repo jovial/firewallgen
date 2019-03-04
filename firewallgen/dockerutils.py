@@ -4,7 +4,7 @@ import re
 
 
 def _process_cgroup_line(line):
-    m = re.search("docker/(?P<id>.*)", line)
+    m = re.search("docker/(?P<id>[^/\n]*)", line)
     if m:
         return m.group("id")
 
