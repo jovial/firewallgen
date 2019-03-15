@@ -1,46 +1,34 @@
-from . import utils
+from __future__ import absolute_import
+from firewallgen import utils
 
+from itertools import chain
 import re
 
+import docker
 
-def _process_cgroup_line(line):
-    m = re.search("docker/(?P<id>[^/\n]*)", line)
-    if m:
-        return m.group("id")
+_pid_cache = {}
 
 
-def pid_to_container_id(pid):
-    cgroup_path = "/proc/{pid}/cgroup".format(pid=pid)
-    with open(cgroup_path) as f:
-        return _cgroup_lines_to_container_id(f)
+def _get_pids(container):
+    raw = container.top(ps_args="-eo pid")
+    return list(chain.from_iterable(raw["Processes"]))
 
 
-def _cgroup_lines_to_container_id(cgroup_lines):
-    for line in cgroup_lines:
-        container_id = _process_cgroup_line(line)
-        if container_id:
-            return container_id
-    return None
-
-
-def _clean_container_name_docker_output(output):
-    m = re.search("'/(?P<container>.*)'", output)
-    if m:
-        return m.group("container")
-
-
-def container_id_to_name(id_, cmdrunner=utils.CmdRunner()):
-    if not id_:
-        return None
-    cmd = ['docker', 'inspect', '--format', "'{{.Name}}'", id_]
-    try:
-        output = cmdrunner.check_output(cmd)
-    except OSError:
-        # Could be the case if docker not installed
-        return None
-    return _clean_container_name_docker_output(output)
+def _gen_cache():
+    client = docker.from_env()
+    containers = client.containers.list()
+    result = {}
+    for container in containers:
+        for pid in _get_pids(container):
+            result[int(pid)] = container.name
+    return result
 
 
 def pid_to_name(pid, cmdrunner=utils.CmdRunner()):
-    id_ = pid_to_container_id(pid)
-    return container_id_to_name(id_, cmdrunner=cmdrunner)
+    global _pid_cache
+    if not _pid_cache:
+        _pid_cache = _gen_cache()
+    if pid not in _pid_cache:
+        return None
+    return _pid_cache[pid]
+

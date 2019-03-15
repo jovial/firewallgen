@@ -25,33 +25,6 @@ LEVEL = logging.WARNING
 logging.basicConfig(format=FORMAT, level=LEVEL)
 
 
-
-CGROUP_LINES_GOOD = """11:pids:/docker/cc0d36ee5866b01475012e2d2aff051ac169c12963af476dd8a3122b3ad1740b
-10:cpuset:/docker/cc0d36ee5866b01475012e2d2aff051ac169c12963af476dd8a3122b3ad1740b
-9:freezer:/docker/cc0d36ee5866b01475012e2d2aff051ac169c12963af476dd8a3122b3ad1740b
-8:perf_event:/docker/cc0d36ee5866b01475012e2d2aff051ac169c12963af476dd8a3122b3ad1740b
-7:memory:/docker/cc0d36ee5866b01475012e2d2aff051ac169c12963af476dd8a3122b3ad1740b
-6:net_prio,net_cls:/docker/cc0d36ee5866b01475012e2d2aff051ac169c12963af476dd8a3122b3ad1740b
-5:blkio:/docker/cc0d36ee5866b01475012e2d2aff051ac169c12963af476dd8a3122b3ad1740b
-4:hugetlb:/docker/cc0d36ee5866b01475012e2d2aff051ac169c12963af476dd8a3122b3ad1740b
-3:cpuacct,cpu:/docker/cc0d36ee5866b01475012e2d2aff051ac169c12963af476dd8a3122b3ad1740b
-2:devices:/docker/cc0d36ee5866b01475012e2d2aff051ac169c12963af476dd8a3122b3ad1740b
-1:name=systemd:/docker/cc0d36ee5866b01475012e2d2aff051ac169c12963af476dd8a3122b3ad1740b
-"""
-
-CGROUP_LINES_BAD = """11:pids:/system.slice/sshd.service
-10:cpuset:/
-9:freezer:/
-8:perf_event:/
-7:memory:/system.slice/sshd.service
-6:net_prio,net_cls:/
-5:blkio:/system.slice/sshd.service
-4:hugetlb:/
-3:cpuacct,cpu:/system.slice/sshd.service
-2:devices:/system.slice/sshd.service
-1:name=systemd:/system.slice/sshd.service
-"""
-
 SS_OUTPUT = """State       Recv-Q Send-Q                                         Local Address:Port                                                        Peer Address:Port              
 LISTEN      0      128                                                10.65.1.0:35357                                                                  *:*                   users:(("httpd",pid=3274,fd=4),("httpd",pid=2789,fd=4),("httpd",pid=2778,fd=4),("httpd",pid=2775,fd=4),("httpd",pid=2774,fd=4),("httpd",pid=2769,fd=4),("httpd",pid=2766,fd=4),("httpd",pid=2761,fd=4),("httpd",pid=2748,fd=4),("httpd",pid=2743,fd=4),("httpd",pid=2656,fd=4))
 LISTEN      0      128                                                10.65.0.1:35357                                                                  *:*                   users:(("haproxy",pid=3306,fd=10))
@@ -193,50 +166,17 @@ class IPUtilsTest(unittest.TestCase):
 
 
 class DockerUtilsTest(unittest.TestCase):
-    def test_process_cgroup_line_good(self):
-        good = ("11:pids:/docker/cc0d36ee5866b01475012e2d2aff051ac169c12963af4"
-                "76dd8a3122b3ad1740b")
-        id_ = dockerutils._process_cgroup_line(
-            good)
-        self.assertEqual(id_, "cc0d36ee5866b01475012e2d2aff051ac169c12963af47"
-                              "6dd8a3122b3ad1740b")
 
-    def test_process_cgroup_line_bad(self):
-        input = "10:cpuset:/"
-        id_ = dockerutils._process_cgroup_line(
-            input)
-        self.assertEqual(id_, None)
+    @classmethod
+    def setUpClass(cls):
+        super(DockerUtilsTest, cls).setUpClass()
+        dockerutils._pid_cache = {
+            123: "docker-container-name"
+        }
 
-    def test_multiple_slashes(self):
-        # this was observed on cumulus
-        line = "1:name=systemd:/docker/fa6b1bd0a55bf3291541fafea115070faf8c6b4e43457c5b0fa1132094311022/docker/fa6b1bd0a55bf3291541fafea115070faf8c6b4e43457c5b0fa1132094311022"
-        id_ = dockerutils._process_cgroup_line(
-            line)
-        self.assertEqual(id_, "fa6b1bd0a55bf3291541fafea115070faf8c6b4e43457c5b0fa1132094311022")
-
-    def test_multiple_slashes_with_newline(self):
-        # this was observed on cumulus
-        line = "1:name=systemd:/docker/fa6b1bd0a55bf3291541fafea115070faf8c6b4e43457c5b0fa1132094311022/docker/fa6b1bd0a55bf3291541fafea115070faf8c6b4e43457c5b0fa1132094311022\n"
-        id_ = dockerutils._process_cgroup_line(
-            line)
-        self.assertEqual(id_, "fa6b1bd0a55bf3291541fafea115070faf8c6b4e43457c5b0fa1132094311022")
-
-    def test_cgroup_lines(self):
-        id_ = dockerutils._cgroup_lines_to_container_id(
-            CGROUP_LINES_GOOD.splitlines())
-        self.assertEqual(id_, "cc0d36ee5866b01475012e2d2aff051ac169c12963af47"
-                              "6dd8a3122b3ad1740b")
-
-    def test_cgroup_lines_bad(self):
-        id_ = dockerutils._cgroup_lines_to_container_id(
-            CGROUP_LINES_BAD.splitlines())
-        self.assertEqual(id_, None)
-
-    def test_clean_container_name_docker_output(self):
-        input_ = "'/prometheus_cadvisor'"
-        output = dockerutils._clean_container_name_docker_output(
-            input_)
-        self.assertEqual("prometheus_cadvisor", output)
+    def test_pid_lookup(self):
+        self.assertEquals(dockerutils.pid_to_name(123),
+                          "docker-container-name")
 
 
 class SSUtilsTest(unittest.TestCase):
