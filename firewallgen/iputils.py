@@ -1,7 +1,7 @@
 import fileinput
 import re
 
-from .utils import call_if_has
+from .utils import call_if_has, CmdRunner
 
 try:
     # python three only
@@ -17,7 +17,14 @@ def do_parse_port(line):
     return addr, port
 
 
-def get_ip_to_interface_map(cmdrunner):
+def ipv6_mapped_to_ipv4(addr):
+    prefix = "::ffff:"
+    if addr.startswith("::ffff:"):
+        addr = addr[len(prefix):]
+    return addr
+
+
+def get_ip_to_interface_map(cmdrunner=CmdRunner()):
     raw = cmdrunner.check_output(["ip", "-o", "addr"])
     if isinstance(raw, str):
         raw = iter(raw.splitlines())

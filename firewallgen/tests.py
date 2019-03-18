@@ -2,6 +2,7 @@ import unittest
 import os
 import logging
 
+from firewallgen import InterfaceMap
 from . import iputils
 from . import ssutils
 from . import utils
@@ -112,6 +113,17 @@ LISTEN      0      128                                                10.60.0.1:
 LISTEN      0      128                                                10.65.0.1:5050                                                                   *:*                   users:(("haproxy",pid=3306,fd=35))
 """
 
+SS_OUTPUT_IPV6 = """State       Recv-Q Send-Q                                         Local Address:Port                                                        Peer Address:Port              
+LISTEN      0      128                                                       :::9197                                                                  :::*                  
+LISTEN      0      128                                                       :::111                                                                   :::*                  
+LISTEN      0      128                                        ::ffff:10.205.1.4:9200                                                                  :::*                  
+LISTEN      0      128                                        ::ffff:10.205.1.4:9300                                                                  :::*                  
+LISTEN      0      128                                                       :::22                                                                    :::*                  
+LISTEN      0      100                                                      ::1:25                                                                    :::*                  
+LISTEN      0      128                                                       :::18080                                                                 :::*                  
+LISTEN      0      128                                                       :::9094                                                                  :::*
+"""
+
 SS_OUTPUT_INTERFACE_IN_ADDR ="""State      Recv-Q Send-Q Local Address:Port               Peer Address:Port              
 UNCONN     0      7680   *%breno1.71:67                       *:*                   users:(("dnsmasq",pid=4987,fd=4))
 """
@@ -163,6 +175,7 @@ class IPUtilsTest(unittest.TestCase):
     def test_lookup_interface(self):
         map = iputils.get_ip_to_interface_map(FakeLSHWRunner())
         self.assertEqual(map['10.65.0.1'], 'breno1.65')
+        # TODO: ipv6 all have the same address :-/
 
 
 class DockerUtilsTest(unittest.TestCase):
@@ -177,6 +190,20 @@ class DockerUtilsTest(unittest.TestCase):
     def test_pid_lookup(self):
         self.assertEquals(dockerutils.pid_to_name(123),
                           "docker-container-name")
+
+
+class UtilsTest(unittest.TestCase):
+    @mock.patch('subprocess.check_output', autospec=True)
+    def test_ipv4_mapped_ipv6_true(self, mock):
+        mock.mock.side_effect = lambda *args, **kwargs: "0"
+        self.assertEquals(utils.is_ipv4_mapped_ipv6_enabled(),
+                          True)
+
+    @mock.patch('subprocess.check_output', autospec=True)
+    def test_ipv4_mapped_ipv6_false(self, mock):
+        mock.mock.side_effect = lambda *args, **kwargs: "1"
+        self.assertEquals(utils.is_ipv4_mapped_ipv6_enabled(),
+                          False)
 
 
 class SSUtilsTest(unittest.TestCase):
@@ -239,6 +266,11 @@ class FakeCollector(firewallgen.TCPDataCollector):
         return iter(SS_OUTPUT.splitlines())
 
 
+class FakeCollectorIPV4Mapped(firewallgen.TCPDataCollectorIPV4Mapped):
+    def get_ss_output(self):
+        return iter(SS_OUTPUT_IPV6.splitlines())
+
+
 class FakeCollectorInterfaceInAddr(firewallgen.TCPDataCollector):
     def get_ss_output(self):
         return SS_OUTPUT_INTERFACE_IN_ADDR
@@ -252,42 +284,63 @@ class FakeCollectorSSNoExtras(firewallgen.UDPDataCollector):
 
 
 class FirewallGen(unittest.TestCase):
+
     def test_opensockets(self):
         result = self.get_open_sockets()
 
     @mock.patch.object(iputils, 'get_ip_to_interface_map', autospec=True)
     def test_ss_no_extras(self, mock_map):
-        mock_map.mock.side_effect = lambda x: {
+        mock_map.mock.side_effect = lambda *args, **kwargs: {
             '10.205.0.1': 'eth1',
             '10.205.1.3': 'eth2',
         }
-        print(self.get_open_sockets(collector=FakeCollectorSSNoExtras()))
+        print(self.get_open_sockets(collector=FakeCollectorSSNoExtras))
 
-    def get_open_sockets(self, collector=FakeCollector()):
+    def get_open_sockets(self, collector=FakeCollector):
         map = {
             '10.65.1.0': 'eth1',
             '10.65.0.1': 'eth2',
             '10.60.0.1': 'eth3',
             '127.0.0.1': 'lo'
         }
-        result = firewallgen.collect_open_sockets(collector, map,
+        interface_finder = InterfaceMap(map)
+        result = firewallgen.collect_open_sockets(collector(interface_finder),
                                                   docker_hinter=fake_pid_to_docker)
 
         return result
 
     @mock.patch.object(iputils, 'get_ip_to_interface_map', autospec=True)
-    def test_interface_lookup(self, mock_map, collector=FakeCollector()):
-        mock_map.mock.side_effect = lambda x: {
+    def test_interface_lookup(self, mock_map, collector=FakeCollector):
+        mock_map.mock.side_effect = lambda *args, **kwargs: {
             '10.65.1.0': 'eth1',
             '10.65.0.1': 'eth2',
             '10.60.0.1': 'eth3',
             '127.0.0.1': 'lo'
         }
-        firewallgen.collect_open_sockets(collector, {},
+        interface_finder = InterfaceMap({})
+        firewallgen.collect_open_sockets(collector(interface_finder),
                                          docker_hinter=fake_pid_to_docker)
+
+    @mock.patch.object(iputils, 'get_ip_to_interface_map', autospec=True)
+    def test_interface_lookup_mapped(self, mock_map,
+                              collector=FakeCollectorIPV4Mapped):
+        mock_map.mock.side_effect = lambda *args, **kwargs: {
+            '10.205.1.4': 'eth1',
+        }
+        interface_finder = InterfaceMap({})
+        sockets = firewallgen.collect_open_sockets(collector(interface_finder),
+                                         docker_hinter=fake_pid_to_docker)
+
+        for item in sockets:
+            if (item.ip == '10.205.1.4' and item.port == 9200 and
+                    item.interface == 'eth1'):
+                return
+
+        self.assertFalse(True)
+
     def test_gen_sockets(self):
         sockets = self.get_open_sockets(
-            collector=FakeCollectorInterfaceInAddr()
+            collector=FakeCollectorInterfaceInAddr
         )
         self.assertEqual(len(sockets), 1)
         socket = sockets[0]
@@ -313,6 +366,7 @@ class Haproxy(unittest.TestCase):
     def test_basic2(self):
         hinter = haproxy.get_hinter(os.path.join(PATH, "testcases", "haproxy.cfg"))
         self.assertEquals(hinter("10.205.0.1", 9200), "elasticsearch")
+
 
 if __name__ == '__main__':
     unittest.main()

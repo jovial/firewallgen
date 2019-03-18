@@ -2,6 +2,7 @@ import re
 import collections
 import logging
 from .logutils import debugcall
+from .utils import CmdRunner
 
 FIELDS = ["State", "Recv-Q", "Send-Q", "Local Address:Port",
           "Peer Address: Port", "Extras"]
@@ -19,11 +20,11 @@ def get_version_flag(version=4):
     return versions[version]
 
 
-def get_tcp_listening(cmdrunner, version=4):
+def get_tcp_listening(cmdrunner=CmdRunner(), version=4):
     return cmdrunner.check_output(["ss", "-nlpt", get_version_flag(version)])
 
 
-def get_udp_listening(cmdrunner, version=4):
+def get_udp_listening(cmdrunner=CmdRunner(), version=4):
     return cmdrunner.check_output(["ss", "-nlpu", get_version_flag(version)])
 
 

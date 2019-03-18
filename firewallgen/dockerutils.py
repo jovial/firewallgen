@@ -1,8 +1,6 @@
 from __future__ import absolute_import
-from firewallgen import utils
 
 from itertools import chain
-import re
 
 import docker
 
@@ -24,7 +22,7 @@ def _gen_cache():
     return result
 
 
-def pid_to_name(pid, cmdrunner=utils.CmdRunner()):
+def pid_to_name(pid):
     global _pid_cache
     if not _pid_cache:
         _pid_cache = _gen_cache()
