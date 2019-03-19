@@ -1,15 +1,20 @@
 from __future__ import absolute_import
 
-from itertools import chain
-
 import docker
+import psutil
 
 _pid_cache = {}
 
 
-def _get_pids(container):
-    raw = container.top(ps_args="-eo pid")
-    return list(chain.from_iterable(raw["Processes"]))
+def find_container(_parents, pid):
+    if pid in _parents:
+        return _parents[pid]
+    process = psutil.Process(pid)
+    if not process:
+        return
+    parents = process.parents()
+    for parent in parents:
+        return find_container(_parents, parent.pid)
 
 
 def _gen_cache():
@@ -17,8 +22,8 @@ def _gen_cache():
     containers = client.containers.list()
     result = {}
     for container in containers:
-        for pid in _get_pids(container):
-            result[int(pid)] = container.name
+        container.reload()
+        result[container.attrs["State"]["Pid"]] = container.name
     return result
 
 
@@ -26,7 +31,5 @@ def pid_to_name(pid):
     global _pid_cache
     if not _pid_cache:
         _pid_cache = _gen_cache()
-    if pid not in _pid_cache:
-        return None
-    return _pid_cache[pid]
+    return find_container(_pid_cache, pid)
 

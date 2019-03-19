@@ -9,6 +9,7 @@ setup(
    packages=['firewallgen'],  #same as name
    include_package_data=True,
    install_requires=[
-       'docker'
+       'docker',
+       'psutil'
    ]
 )
