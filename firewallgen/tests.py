@@ -178,13 +178,19 @@ class IPUtilsTest(unittest.TestCase):
         # TODO: ipv6 all have the same address :-/
 
 
+class FakeDockerContainer:
+
+    def __init__(self, name):
+        self.name = name
+
+
 class DockerUtilsTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
         super(DockerUtilsTest, cls).setUpClass()
-        dockerutils._pid_cache = {
-            123: "docker-container-name"
+        dockerutils._pid0_cache = {
+            123: FakeDockerContainer(name="docker-container-name")
         }
 
     def test_pid_lookup(self):
