@@ -1,6 +1,11 @@
 import re
 import glob
 
+try:
+    from collections.abc import Iterable  # noqa
+except ImportError:
+    from collections import Iterable  # noqa
+
 
 def get_service(ip, port, cfg):
     term = "{}:{}".format(ip, port)
@@ -17,9 +22,17 @@ def get_service(ip, port, cfg):
         pass
 
 
-def get_hinter(cfg="/etc/kolla/haproxy/haproxy.cfg"):
+def get_hinter(*cfg):
+    if len(cfg) == 0:
+        cfg = [
+            "/etc/kolla/haproxy/haproxy.cfg",
+            "/etc/kolla/haproxy/services.d/*.cfg"
+        ]
+    else:
+        cfg = list(cfg)
+
     def wrapper(*args, **kwargs):
-        if isinstance(cfg, list):
+        if isinstance(cfg, Iterable):
             for item in cfg:
                 files = glob.glob(item)
                 for f in files:
