@@ -1,7 +1,7 @@
-import fileinput
 import re
+import subprocess
 
-from .utils import call_if_has, CmdRunner
+from utils import CmdRunner
 
 try:
     # python three only
@@ -10,7 +10,7 @@ except ImportError:
     pass
 
 
-def do_parse_port(line):
+def parse_ip_port(line):
     split = line.split(":")
     addr = ":".join(split[0:-1])
     port = int(split[-1])
@@ -31,7 +31,7 @@ def get_ip_to_interface_map(cmdrunner=CmdRunner()):
 
     ip_map = {}
     for line in raw:
-        fields = re.split('\s+', line)
+        fields = re.split(r'\s+', line)
         interface = fields[1]
         ip_and_subnet = fields[3]
         ip = ip_and_subnet.split("/")[0]
@@ -39,55 +39,7 @@ def get_ip_to_interface_map(cmdrunner=CmdRunner()):
     return ip_map
 
 
-def parse_port(line, events):
-    addr_raw, port = do_parse_port(line)
-    try:
-        addr = ipaddress.ip_address(addr_raw)
-        if isinstance(addr, ipaddress.IPv4Address):
-            call_if_has(events, "on_ipv4", addr, port)
-        else:
-            call_if_has(events, "on_ipv6", addr, port)
-    except ValueError:
-        if addr_raw == "*":
-            call_if_has(events, "on_wildcard_ipv4", addr_raw, port)
-
-
-def _to_json(addr, port):
-    result = (
-            '{' +
-            '"address": "{addr}", "port": "{port}"'.format(addr=addr,
-                                                           port=port)
-            + '}'
-    )
-    return result
-
-
-class IPV4Parser:
-    first = True
-
-    def on_start(self):
-        print("[")
-
-    def on_ipv4(self, addr, port):
-        if self.first:
-            self.first = False
-            print(_to_json(addr, port))
-        else:
-            print(",")
-            print(_to_json(addr, port))
-
-    def parse(self, line):
-        parse_port(line, self)
-
-    def on_finish(self):
-        print("]")
-
-
-if __name__ == "__main__":
-
-    input = fileinput.input()
-    parser = IPV4Parser()
-    parser.on_start()
-    for line in input:
-        parser.parse(line)
-    parser.on_finish()
+def is_ipv4_mapped_ipv6_enabled():
+    output = subprocess.check_output(["sysctl", "net.ipv6.bindv6only",
+                                     "--values"])
+    return int(output) == 0

@@ -1,8 +1,8 @@
 import re
 import collections
 import logging
-from .logutils import debugcall
-from .utils import CmdRunner
+from logutils import debugcall
+from utils import CmdRunner
 
 FIELDS = ["State", "Recv-Q", "Send-Q", "Local Address:Port",
           "Peer Address: Port", "Extras"]

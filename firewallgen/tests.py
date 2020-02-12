@@ -2,14 +2,14 @@ import unittest
 import os
 import logging
 
+from firewallgen import iputils
+from firewallgen import ssutils
+from firewallgen import utils
 from firewallgen import InterfaceMap
-from . import iputils
-from . import ssutils
-from . import utils
-from . import firewallgen
-from . import dockerutils
-from . import haproxy
-from .ssutils import (Punctuation, Identifier, Number, String)
+import firewallgen
+from firewallgen import dockerutils
+from firewallgen import haproxy
+from firewallgen.ssutils import (Punctuation, Identifier, Number, String)
 import mock
 
 logger = logging.getLogger('firewallgen')
@@ -165,11 +165,11 @@ class FakeLSHWRunner(utils.CmdRunner):
 
 class IPUtilsTest(unittest.TestCase):
     def test_parse_port(self):
-        res = iputils.do_parse_port("10.1.1.8:8001")
+        res = iputils.parse_ip_port("10.1.1.8:8001")
         self.assertEqual(('10.1.1.8', 8001), res)
-        res = iputils.do_parse_port("*:8001")
+        res = iputils.parse_ip_port("*:8001")
         self.assertEqual(('*', 8001), res)
-        res = iputils.do_parse_port("::1:25")
+        res = iputils.parse_ip_port("::1:25")
         self.assertEqual(('::1', 25), res)
 
     def test_lookup_interface(self):
@@ -178,13 +178,19 @@ class IPUtilsTest(unittest.TestCase):
         # TODO: ipv6 all have the same address :-/
 
 
+class FakeDockerContainer:
+
+    def __init__(self, name):
+        self.name = name
+
+
 class DockerUtilsTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
         super(DockerUtilsTest, cls).setUpClass()
-        dockerutils._pid_cache = {
-            123: "docker-container-name"
+        dockerutils._pid0_cache = {
+            123: FakeDockerContainer(name="docker-container-name")
         }
 
     def test_pid_lookup(self):
@@ -196,13 +202,13 @@ class UtilsTest(unittest.TestCase):
     @mock.patch('subprocess.check_output', autospec=True)
     def test_ipv4_mapped_ipv6_true(self, mock):
         mock.mock.side_effect = lambda *args, **kwargs: "0"
-        self.assertEquals(utils.is_ipv4_mapped_ipv6_enabled(),
+        self.assertEquals(firewallgen.iputils.is_ipv4_mapped_ipv6_enabled(),
                           True)
 
     @mock.patch('subprocess.check_output', autospec=True)
     def test_ipv4_mapped_ipv6_false(self, mock):
         mock.mock.side_effect = lambda *args, **kwargs: "1"
-        self.assertEquals(utils.is_ipv4_mapped_ipv6_enabled(),
+        self.assertEquals(firewallgen.iputils.is_ipv4_mapped_ipv6_enabled(),
                           False)
 
 
