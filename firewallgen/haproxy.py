@@ -8,7 +8,7 @@ except ImportError:
 
 
 def get_service(ip, port, cfg):
-    term = "{}:{}".format(ip, port)
+    term = "{}:{} ".format(ip, port)
     try:
         with open(cfg) as f:
             lines = f.readlines()
